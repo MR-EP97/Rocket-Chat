@@ -4,7 +4,7 @@ namespace App\Enums\RocketChat;
 
 enum Admin
 {
-    public const ADMIN_URL = 'https://api.chat.h-soft.ir/auth/login';
-    public const ADMIN_USERNAME = 'admin';
-    public const ADMIN_PASSWORD = 'Admin123';
+    public const URL = 'https://api.chat.h-soft.ir/auth/login';
+    public const USERNAME = 'admin';
+    public const PASSWORD = 'Admin123';
 }

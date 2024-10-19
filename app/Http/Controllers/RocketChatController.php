@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\RocketChat\AddGroup;
+use App\Http\Requests\AddGroupRequest;
 use App\Http\Requests\UserRegisterRequest;
 use App\Services\ApiServices\RocketChatService;
 use App\Traits\JsonResponseTrait;
@@ -30,4 +32,17 @@ class RocketChatController extends Controller
             HttpResponse::HTTP_CREATED
         );
     }
+
+    public function addGroup(AddGroupRequest $request): JsonResponse
+    {
+        $group = $this->rocketChatService->addGroup((array)$request->validated());
+
+        return $this->successJson(
+            $group['message'],
+            ['group_id' => $group['data']['groupid']],
+            HttpResponse::HTTP_CREATED
+        );
+    }
+
+
 }

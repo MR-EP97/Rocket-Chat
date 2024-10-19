@@ -16,10 +16,10 @@ abstract class RocketChat
     {
         try {
             $response = Http::asForm()
-                ->post(Admin::ADMIN_URL,
+                ->post(Admin::URL,
                     [
-                        'username' => Admin::ADMIN_USERNAME,
-                        'password' => Admin::ADMIN_PASSWORD
+                        'username' => Admin::USERNAME,
+                        'password' => Admin::PASSWORD
                     ]);
 
             if ($response['status'] === 'failed!') {
