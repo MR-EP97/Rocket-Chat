@@ -62,7 +62,6 @@ class RocketChatService extends RocketChat
                     'users' => $request['users'],
                     'moderators' => $request['moderators'],
                 ]);
-
             if ($response['status']) {
                 return $this->successArray('Create group successfully',
                     data: $response);
@@ -76,8 +75,32 @@ class RocketChatService extends RocketChat
                 $e->getMessage(),
             );
         }
-
     }
 
+    public function startChat(array $request)
+    {
+        $token = $this->tokenRequest();
+
+        try {
+            $response = Http::withHeaders([
+                'Authorization' => 'Bearer ' . $token['data']['access_token'],
+            ])->post(AddGroup::URL,
+                [
+                    'userid' => $request['userid'],
+                ]);
+            if ($response['status']) {
+                return $this->successArray('Create token successfully',
+                    data: $response);
+            }
+            return $this->errorJson(
+                'Invalid request',
+                HttpResponse::HTTP_UNPROCESSABLE_ENTITY,
+            );
+        } catch (\Exception $e) {
+            return $this->errorJson(
+                $e->getMessage(),
+            );
+        }
+    }
 
 }

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Enums\RocketChat\AddGroup;
 use App\Http\Requests\AddGroupRequest;
+use App\Http\Requests\StartChatRequest;
 use App\Http\Requests\UserRegisterRequest;
 use App\Services\ApiServices\RocketChatService;
 use App\Traits\JsonResponseTrait;
@@ -40,6 +41,17 @@ class RocketChatController extends Controller
         return $this->successJson(
             $group['message'],
             ['group_id' => $group['data']['groupid']],
+            HttpResponse::HTTP_CREATED
+        );
+    }
+
+    public function startChat(StartChatRequest $request)
+    {
+        $chat = $this->rocketChatService->startChat($request->validated());
+
+        return $this->successJson(
+            $chat['message'],
+            ['url' => $chat['data']['url']],
             HttpResponse::HTTP_CREATED
         );
     }
