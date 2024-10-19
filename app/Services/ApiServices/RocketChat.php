@@ -12,10 +12,9 @@ abstract class RocketChat
 {
     use ArrayResponseTrait;
 
-    public function getToken(): array
+    protected function tokenRequest(): array
     {
         try {
-
             $response = Http::asForm()
                 ->post(Admin::ADMIN_URL,
                     [
@@ -34,6 +33,7 @@ abstract class RocketChat
         } catch (Exception $exception) {
             return $this->errorArray($exception->getMessage());
         }
-
     }
+
+
 }
