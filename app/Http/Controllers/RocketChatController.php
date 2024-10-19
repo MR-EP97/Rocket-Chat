@@ -8,6 +8,7 @@ use App\Http\Requests\StartChatRequest;
 use App\Http\Requests\UserRegisterRequest;
 use App\Services\ApiServices\RocketChatService;
 use App\Traits\JsonResponseTrait;
+use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use phpDocumentor\Reflection\DocBlock\Tags\Uses;
@@ -25,36 +26,76 @@ class RocketChatController extends Controller
 
     public function addUser(UserRegisterRequest $request): JsonResponse
     {
-        $user = $this->rocketChatService->registerUser((array)$request->validated());
+        try {
+            $user = $this->rocketChatService->registerUser((array)$request->validated());
+            return $this->successJson(
+                'User Created successfully',
+                ['user_id' => $user['userid']],
+                HttpResponse::HTTP_CREATED
+            );
+        } catch (\Exception $e) {
+            if ($e instanceof ConnectionException) {
+                return $this->errorJson(
+                    'connection error',
+                    HttpResponse::HTTP_BAD_GATEWAY
+                );
+            }
+            return $this->errorJson(
+                $e->getMessage()
+            );
+        }
 
-        return $this->successJson(
-            'User Created successfully',
-            ['user_id' => $user['userid']],
-            HttpResponse::HTTP_CREATED
-        );
+
     }
 
     public function addGroup(AddGroupRequest $request): JsonResponse
     {
-        $group = $this->rocketChatService->addGroup((array)$request->validated());
+        try {
+            $group = $this->rocketChatService->addGroup((array)$request->validated());
 
-        return $this->successJson(
-            $group['message'],
-            ['group_id' => $group['data']['groupid']],
-            HttpResponse::HTTP_CREATED
-        );
+            return $this->successJson(
+                $group['message'],
+                ['group_id' => $group['data']['groupid']],
+                HttpResponse::HTTP_CREATED
+            );
+
+        } catch (\Exception $e) {
+            if ($e instanceof ConnectionException) {
+                return $this->errorJson(
+                    'connection error',
+                    HttpResponse::HTTP_BAD_GATEWAY
+                );
+            }
+            return $this->errorJson(
+                $e->getMessage()
+            );
+        }
+
     }
 
-    public function startChat(StartChatRequest $request)
+    public function startChat(StartChatRequest $request): JsonResponse
     {
-        $chat = $this->rocketChatService->startChat($request->validated());
+        try {
+            $chat = $this->rocketChatService->startChat($request->validated());
 
-        return $this->successJson(
-            $chat['message'],
-            ['url' => $chat['data']['url']],
-            HttpResponse::HTTP_CREATED
-        );
+            return $this->successJson(
+                $chat['message'],
+                ['url' => $chat['data']['url']],
+                HttpResponse::HTTP_CREATED
+            );
+
+        } catch (\Exception $e) {
+            if ($e instanceof ConnectionException) {
+                return $this->errorJson(
+                    'connection error',
+                    HttpResponse::HTTP_BAD_GATEWAY
+                );
+            }
+            return $this->errorJson(
+                $e->getMessage()
+            );
+        }
+
     }
-
 
 }

@@ -7,11 +7,12 @@ use App\Enums\RocketChat\Admin;
 use App\Enums\RocketChat\RegisterUser;
 use App\Traits\ArrayResponseTrait;
 use App\Traits\JsonResponseTrait;
-use Illuminate\Http\Client\ConnectionException;
+use http\Exception;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Js;
 use Symfony\Component\HttpFoundation\Response as HttpResponse;
+use function Pest\Laravel\json;
 
 class RocketChatService extends RocketChat
 {
@@ -22,11 +23,9 @@ class RocketChatService extends RocketChat
      */
     public function registerUser(array $request): JsonResponse|array
     {
-        $token = $this->tokenRequest();
-
         try {
             $response = Http::withHeaders([
-                'Authorization' => 'Bearer ' . $token['data']['access_token'],
+                'Authorization' => $this->getToken(),
             ])->post(RegisterUser::URL,
                 [
                     'username' => $request['username'],
@@ -37,25 +36,18 @@ class RocketChatService extends RocketChat
             if ($response['status']) {
                 return $this->successArray(data: $response);
             }
-            return $this->errorJson(
-                'Invalid request',
-                HttpResponse::HTTP_UNPROCESSABLE_ENTITY,
-            );
+            throw new \Exception('Invalid request');
         } catch (\Exception $e) {
-            return $this->errorJson(
-                $e->getMessage(),
-            );
+            throw new \RuntimeException($e->getMessage(), $e->getCode());
         }
 
     }
 
     public function addGroup(array $request): JsonResponse|array
     {
-        $token = $this->tokenRequest();
-
         try {
             $response = Http::withHeaders([
-                'Authorization' => 'Bearer ' . $token['data']['access_token'],
+                'Authorization' => $this->getToken(),
             ])->post(AddGroup::URL,
                 [
                     'name' => $request['name'],
@@ -66,24 +58,19 @@ class RocketChatService extends RocketChat
                 return $this->successArray('Create group successfully',
                     data: $response);
             }
-            return $this->errorJson(
-                'Invalid request',
-                HttpResponse::HTTP_UNPROCESSABLE_ENTITY,
-            );
+            throw new \RuntimeException('Invalid request');
+
         } catch (\Exception $e) {
-            return $this->errorJson(
-                $e->getMessage(),
-            );
+            throw new \RuntimeException($e->getMessage());
         }
     }
 
-    public function startChat(array $request)
+    public function startChat(array $request): array
     {
-        $token = $this->tokenRequest();
 
         try {
             $response = Http::withHeaders([
-                'Authorization' => 'Bearer ' . $token['data']['access_token'],
+                'Authorization' => $this->getToken(),
             ])->post(AddGroup::URL,
                 [
                     'userid' => $request['userid'],
@@ -92,15 +79,13 @@ class RocketChatService extends RocketChat
                 return $this->successArray('Create token successfully',
                     data: $response);
             }
-            return $this->errorJson(
-                'Invalid request',
-                HttpResponse::HTTP_UNPROCESSABLE_ENTITY,
-            );
+
+            throw new \RuntimeException('Invalid request');
+
         } catch (\Exception $e) {
-            return $this->errorJson(
-                $e->getMessage(),
-            );
+            throw new \RuntimeException($e->getMessage());
         }
     }
+
 
 }

@@ -4,15 +4,23 @@ namespace App\Services\ApiServices;
 
 use App\Enums\RocketChat\Admin;
 use App\Traits\ArrayResponseTrait;
+use App\Traits\JsonResponseTrait;
 use Illuminate\Http\Client\ConnectionException;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Mockery\Exception;
+use Symfony\Component\HttpFoundation\Response as HttpResponse;
+
 
 abstract class RocketChat
 {
-    use ArrayResponseTrait;
+    use ArrayResponseTrait, JsonResponseTrait;
 
-    protected function tokenRequest(): array
+    /**
+     * @throws ConnectionException
+     */
+    protected function tokenRequest(): array|JsonResponse
     {
         try {
             $response = Http::asForm()
@@ -23,16 +31,25 @@ abstract class RocketChat
                     ]);
 
             if ($response['status'] === 'failed!') {
-                return $this->errorArray('Invalid credentials');
+                throw new Exception('Invalid credentials');
             }
 
             return $this->successArray(data: ['access_token' => $response['access_token']]);
 
-        } catch (ConnectionException $exception) {
-            return $this->errorArray('Connection failed');
         } catch (Exception $exception) {
-            return $this->errorArray($exception->getMessage());
+            throw new \RuntimeException($exception->getMessage(), $exception->getCode());
         }
+    }
+
+    protected function getToken(): string
+    {
+        return 'Bearer ' . Cache::remember(
+                'admin_token',
+                59 * 60 * 24 * 7,
+                function () {
+                    return $this->tokenRequest()['data']['access_token'];
+                }
+            );
     }
 
 
